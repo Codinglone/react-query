@@ -13,7 +13,9 @@ const ToDoList = () => {
     isError,
     error,
     data: todos,
-  } = useQuery("todos", getTodos);
+  } = useQuery("todos", getTodos, {
+    select:  data => data.sort((a, b) => b.id - a.id)
+  });
 
   const addTodoMutation = useMutation(addToDo, {
     onSuccess: () => {
@@ -64,7 +66,26 @@ const ToDoList = () => {
     content =  <p>{error.message}</p>
   }
   else {
-    content = JSON.stringify(todos)
+    content = todos.map((todo) => {
+        return (
+            <article key={todo.id}>
+                <div className="todo">
+                    <input
+                        type="checkbox"
+                        checked={todo.completed}
+                        id={todo.id}
+                        onChange={() =>
+                            updateTodoMutation.mutate({ ...todo, completed: !todo.completed })
+                        }
+                    />
+                    <label htmlFor={todo.id}>{todo.title}</label>
+                </div>
+                <button className="trash" onClick={() => deleteTodoMutation.mutate({ id: todo.id })}>
+                    <FontAwesomeIcon icon={faTrash} />
+                </button>
+            </article>
+        )
+    })
   }
   return ( 
      <main>
